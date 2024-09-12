@@ -39,7 +39,7 @@ def calcularLU(A):
 
 def inversaLU(L, U):
     Inv = []
-    # su código
-    
-    ###########
+    L, U, cant_op = elim_gaussiana(A)
+    y = scipy.linalg.solve_triangular(L,e, lower=True)
+    x = scipy.linalg.solve_triangular(U,y)
     return Inv
