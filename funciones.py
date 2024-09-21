@@ -87,4 +87,15 @@ def calculo_k(fila_actual, divisor, iterador):
     if divisor != 0:
         multiplicador = fila_actual[iterador] / divisor
     return multiplicador
+
+
+#### habia armado esta de permutar filas pero no llegue a hacer que ande bien
+
+def permutarFilas(matriz, i):
+    while matriz[i][i] == 0:
+        if i>= matriz.shape[0]-1:
+            return "no se puede hacer la LU"
+        else:
+            matriz[[i, i + 1]] = matriz[[i + 1, i]]
+    return matriz
    
