@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+import scipy.linalg as sc
 
 def calcularLU(A):
     m=A.shape[0] #filas
@@ -41,8 +41,8 @@ def calcularLU(A):
 def inversaLU(L, U):
     Inv = []
     L, U, cant_op = elim_gaussiana(A)
-    y = scipy.linalg.solve_triangular(L,e, lower=True)
-    x = scipy.linalg.solve_triangular(U,y)
+    y = sc.solve_triangular(L,e, lower=True)
+    x = sc.solve_triangular(U,y)
     return Inv
 
 
@@ -99,3 +99,16 @@ def permutarFilas(matriz, i):
             matriz[[i, i + 1]] = matriz[[i + 1, i]]
     return matriz
    
+
+
+def coefTec(z,p):
+    p = np.diag(p.values) #Diagonalizo el vector
+    per,l,u = sc.lu(p) #Lu de p
+    inv_p = sc.inv(per@l@u) #Inversa de p
+    return z@inv_p
+
+def Leont2Reg(A,P): #Funcion de Leontief para 2 regiones, usando la formula (I-A)P = D
+    m=A.shape[0] #filas A
+    Id = np.identity(m)
+    _A = Id - A
+    return _A @ P
