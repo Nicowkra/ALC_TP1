@@ -47,7 +47,7 @@ Nic_out = Nic_out.replace(0,1) #remplazo 0 por 1
 #----Coeficientes Tecnicos----#
 
 #Coef intra-regionales
-#cT_NxN = f.coefTec (Nic_int,Nic_out)
+cT_NxN = f.coefTec (Nic_int,Nic_out)
 #cT_PxP = f.coefTec (Pry_int,Pry_out)
 #Coef intre-regionales
 #cT_NxP = f.coefTec (Nic_int,Pry_out)
@@ -65,6 +65,10 @@ P2['PRYs8'] = P2['PRYs8']*1.033
 D1 = f.Leont2Reg(A,P1) # Demanda para las dos regiones originales
 D2 = f.Leont2Reg(A,P2) # Demanda para las dos regiones con los shocks aplicados
 
+Delta_Demanda = D2 - D1
+
 df = pd.DataFrame({'Original':D1,'Variación':D2},index = colnames['Sectores'])
-df.plot.bar(rot = 90,title ='Simulación de shock',figsize=(20, 5))
+Delta_Demanda.plot.bar(rot = 90,title ='Variación de demanda en unidades',ylim=(-5000,230000),
+                       color=np.where(Delta_Demanda<0,'crimson','steelblue'),figsize=(20, 5))
+df.plot.bar(rot = 90,title ='Comparación de demanda',figsize=(20, 5))
 
