@@ -68,7 +68,8 @@ D2 = f.Leont2Reg(A,P2) # Demanda para las dos regiones con los shocks aplicados
 Delta_Demanda = D2 - D1
 
 df = pd.DataFrame({'Original':D1,'Variación':D2},index = colnames['Sectores'])
-Delta_Demanda.plot.bar(rot = 90,title ='Variación de demanda en unidades',ylim=(-5000,230000),
-                       color=np.where(Delta_Demanda<0,'crimson','steelblue'),figsize=(20, 5))
+df_Delta = pd.Series(Delta_Demanda,index = colnames['Sectores'])
+df_Delta.plot.bar(rot = 90,title ='Variación de demanda en unidades',
+                       color=np.where(df_Delta<0,'crimson','steelblue'),figsize=(20, 5))
 df.plot.bar(rot = 90,title ='Comparación de demanda',figsize=(20, 5))
 

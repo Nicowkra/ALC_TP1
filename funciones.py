@@ -110,5 +110,6 @@ def coefTec(z,p):
 def Leont2Reg(A,P): #Funcion de Leontief para 2 regiones, usando la formula (I-A)P = D
     m=A.shape[0] #filas A
     Id = np.identity(m)
-    _A = Id - A
-    return _A @ P
+    A = Id - A
+    inv_A = sc.inv(A)
+    return inv_A @ P
