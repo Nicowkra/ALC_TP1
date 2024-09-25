@@ -1,44 +1,21 @@
+"""
+Materia: Algebra Lineal Computacional - FCEyN - UBA
+Motivo  : 1er Trabajo Practico
+Autor  : Nicolas, Valentin Carcamo, Nadina Soler
+"""
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
 import numpy as np
 import pandas as pd
 import scipy.linalg as sc
-
-def calcularLU(A):
-    m=A.shape[0] #filas
-    n=A.shape[1] #columnas
-    Ac= A.copy() 
-    Ad =  A.copy() 
-    
-    if m!=n:
-        print('Matriz no cuadrada')
-        return 
-
-    ## Aca calculo los valores de los multiplicadores y lo actualizo en A
-    for j in range (n): #columnas
-        pivote = Ad[j,j]
-        for i in range(1, m): #filas
-            if j < i:
-                k = calculo_k(Ad[i], pivote, j) #calculo k
-                if k != 0:
-                    Ad[i] = Ad[i] - k*Ad[j]
-                    Ac[i][j] = k #agrego k 
-                    cant_op += 1
-                else:
-                    continue
-                
-    ## Aca actualizo los valores arriba de la diagonal
-    for j in range (n): #columnas
-        for i in range(1, m): #filas
-            if j >= i:
-                Ac[i][j] = Ad[i][j]
-     
-    L = np.tril(Ac,-1) + np.eye(A.shape[0]) 
-    U = np.triu(Ac)
-    return L, U, cant_op
-    
-    ###########
-    return L, U
+import matplotlib.pyplot as plt
 
 
+# =============================================================================
+# FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
+# =============================================================================
 
 def inversaLU(L, U):
     filas, columnas = L.shape
@@ -52,59 +29,71 @@ def inversaLU(L, U):
 
     return Inv
 
-###codigo nari 
-def elim_gaussiana(A):
+def calcularLU(A):
     cant_op = 0
-    m=A.shape[0] #filas
-    n=A.shape[1] #columnas
-    Ac= A.copy() 
-    Ad =  A.copy() 
+    m = A.shape[0]  # filas
+    n = A.shape[1]  # columnas
+    Ac = np.zeros_like(A)  # matriz para L
+    Ad = A.copy()  # matriz que se va a descomponer
     
-    if m!=n:
+    if m != n:
         print('Matriz no cuadrada')
-        return 
-
-    ## Aca calculo los valores de los multiplicadores y lo actualizo en A
-    for j in range (n): #columnas
-        pivote = Ad[j,j]
-        for i in range(1, m): #filas
-            if j < i:
-                k = calculo_k(Ad[i], pivote, j) #calculo k
-                if k != 0:
-                    Ad[i] = Ad[i] - k*Ad[j]
-                    Ac[i][j] = k #agrego k 
-                    cant_op += 1
-                else:
-                    continue
-                
-    ## Aca actualizo los valores arriba de la diagonal
-    for j in range (n): #columnas
-        for i in range(1, m): #filas
-            if j >= i:
-                Ac[i][j] = Ad[i][j]
-     
-    L = np.tril(Ac,-1) + np.eye(A.shape[0]) 
-    U = np.triu(Ac)
-    return L, U, cant_op
+        return None, None, 0
     
+    for j in range(n):  # columnas
+        pivote = Ad[j, j]
+
+        # Caso que el pivote es cero
+        if pivote == 0:
+            # Buscamos el primer elemento no cero en la columna j por debajo de la fila j
+            for k in range(j + 1, m):
+                if Ad[k, j] != 0:
+                    # Intercambiar filas
+                    Ad[[j, k]] = Ad[[k, j]]  # Intercambiar filas en Ad
+                    break  # Salir del bucle después de permutar
+
+            # Recalcular el pivote después del intercambio
+            pivote = Ad[j, j]
+            if pivote == 0:
+                print('No se puede continuar: todos los pivotes en la columna son cero.')
+                return None, None, 0
+
+        # Calcular los valores de los multiplicadores y actualizar Ad
+        for i in range(j + 1, m):  # filas debajo del pivote
+            k = calculo_k(Ad[i], pivote, j)  # cálculo del multiplicador
+            Ad[i] = Ad[i] - k * Ad[j]  # restar fila multiplicada por el pivote
+            Ac[i, j] = k  # almacenar el multiplicador en la matriz L
+            cant_op += 1
+
+    # Actualizar las matrices L y U
+    L = np.tril(Ac, -1) + np.eye(m)  # matriz triangular inferior con 1's en la diagonal
+    U = Ad  # matriz triangular superior
+
+    return L, U, cant_op  # devolver L, U y contador de operaciones
 
 def calculo_k(fila_actual, divisor, iterador):
-    multiplicador = 0
     if divisor != 0:
-        multiplicador = fila_actual[iterador] / divisor
-    return multiplicador
+        return fila_actual[iterador] / divisor
+    return 0  # devolver 0 si el divisor es cero
 
 
-#### habia armado esta de permutar filas pero no llegue a hacer que ande bien
+def inversaLU(L, U):
+    filas, columnas = L.shape
+    Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
+    id = np.eye(filas)  # Crea una matriz identidad
 
-def permutarFilas(matriz, i):
-    while matriz[i][i] == 0:
-        if i>= matriz.shape[0]-1:
-            return "no se puede hacer la LU"
-        else:
-            matriz[[i, i + 1]] = matriz[[i + 1, i]]
-    return matriz
-   
+    for i in range(columnas):
+        y = sc.solve_triangular(L, id[:, i], lower=True)  # Resuelve L * y = e_i
+        x = sc.solve_triangular(U, y)  # Resuelve U * x = y
+        Inv[:, i] = x  # Almacena la columna en Inv
+
+    return Inv
+      
+
+# =============================================================================
+# --
+# =============================================================================
+                
 def crearMatrizA(matriz):
     Nic_col = []    
     Pry_col = []
@@ -237,9 +226,32 @@ def shock():
     Delta_Prod = _res @ Delta_Demanda
 
     #Delta_Prod = P2 - P1 # Diferencia en la producción
-    Delta_Prod.plot(kind="bar",rot = 90,title ='Variación de producción',
-                           color=np.where(Delta_Prod<0,'crimson','steelblue'),figsize=(20, 5))
+    
+    Delta_Prod.plot(
+        kind="bar", 
+        rot=45, 
+        title='Variación de producción', 
+        color=np.where(Delta_Prod < 0, 'crimson', 'steelblue'), 
+        figsize=(20, 5)
+    )
+    
+    # Mejoro la letra del título
+    plt.title('Variación de producción', fontsize=20, fontweight='bold')
+    
+    # Agrego los valores encima de cada barra
+    for idx, value in enumerate(Delta_Prod):
+        plt.text(idx, value + (0.01 if value >= 0 else -0.05), 
+                 f'{value:.2f}', ha='center', va='bottom' if value >= 0 else 'top', fontsize=9)
+    
+    # Mejoro el estilo de los ejes
+    plt.xlabel('Sectores', fontsize=15)
+    plt.ylabel('Variación', fontsize=15)
+    
+    # Ajusto los márgenes para que no se corte el gráfico
+    plt.tight_layout()
 
+    # Muestro el gráfico
+    plt.show()
 
     
 def Leont2Reg(A,P): #Funcion de Leontief para 2 regiones, usando la formula (I-A)P = D
@@ -247,3 +259,21 @@ def Leont2Reg(A,P): #Funcion de Leontief para 2 regiones, usando la formula (I-A
     Id = np.identity(m)
     res = Id - A
     return res @ P
+
+
+# =============================================================================
+# FUNCION PARA CONSIGNA 5
+# =============================================================================
+
+def construirZyP():
+    # Construyo Z y P
+    Z = pd.DataFrame({'S1':[350,50,200],'S2':[0,250,150],'S3':[0,150,550]})
+    P = pd.Series({'S1':1000,'S2':500,'S3':1000}) 
+
+    A = calcCoefTec(Z, P) # Funcion que calcula los coeficientes tecnicos 
+
+    L = np.identity(A.shape[0]) - A # Busco la matriz de Leontief
+    L = sc.inv(L)
+
+    print("Imprimimos la matriz A:\n", A)
+    print("Imprimimos la matriz L de Leontief:\n", L)
