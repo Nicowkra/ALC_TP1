@@ -37,12 +37,16 @@ def calcularLU(A):
     ###########
     return L, U
 
-
 def inversaLU(L, U):
-    Inv = []
-    L, U, cant_op = elim_gaussiana(A)
-    y = sc.solve_triangular(L,e, lower=True)
-    x = sc.solve_triangular(U,y)
+    filas, columnas = L.shape
+    Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
+    id = np.eye(filas)  # Crea una matriz identidad
+
+    for i in range(columnas):
+        y = sc.solve_triangular(L, id[:, i], lower=True)  # Resuelve L * y = e_i
+        x = sc.solve_triangular(U, y)  # Resuelve U * x = y
+        Inv[:, i] = x  # Almacena la columna en Inv
+
     return Inv
 
 
