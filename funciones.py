@@ -7,10 +7,11 @@ Autor  : Nicolas, Valentin Carcamo, Nadina Soler
 # =============================================================================
 # IMPORTS
 # =============================================================================
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.linalg as sc
-import matplotlib.pyplot as plt
+
 
 # =============================================================================
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
@@ -79,7 +80,8 @@ def calculo_k(fila_actual, divisor, iterador):
 # --
 # =============================================================================
                 
-def crearMatrizA(matriz):
+def crearMatrizA():
+    matriz = pd.read_excel("matriz.xlsx", sheet_name ="LAC_IOT_2011",)
     Nic_col = []    
     Pry_col = []
     for i in range(1,41): #Crea la lista de columnas a filtrar
@@ -157,7 +159,7 @@ def calcCoefTec(z,p):
     return z@inv_p
 def shock():
     matriz = pd.read_excel("matriz.xlsx", sheet_name ="LAC_IOT_2011",)
-    A = crearMatrizA(matriz)
+    A = crearMatrizA()
     Pry = matriz[matriz["Country_iso3"] == "PRY"] # Crea la tabla con filas de PRY
     Nic = matriz[matriz["Country_iso3"] == "NIC"] # Crea la tabla con filas de NIC
     Nic_col = []    
@@ -240,7 +242,7 @@ def shock():
 
 def regionSimple():
     matriz = pd.read_excel("matriz.xlsx", sheet_name ="LAC_IOT_2011",)
-    A = crearMatrizA(matriz)
+    A = crearMatrizA()
     Pry = matriz[matriz["Country_iso3"] == "PRY"] # Crea la tabla con filas de PRY
     Nic = matriz[matriz["Country_iso3"] == "NIC"] # Crea la tabla con filas de NIC
     Nic_col = []    
