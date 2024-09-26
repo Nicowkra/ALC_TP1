@@ -11,14 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.linalg as sc
-
-
 # =============================================================================
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
 # =============================================================================
-
 def inversaLU(A):
-    L, U,P, cant_op = calcularLU(A)
+    L, U, P, cant_op = calcularLU(A)
     filas, columnas = L.shape
     Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
     id = np.eye(filas)  # Crea una matriz identidad
@@ -34,13 +31,14 @@ def calcularLU(A):
     cant_op = 0
     m = A.shape[0]  # filas
     n = A.shape[1]  # columnas
-    Ac = np.zeros_like(A)  # matriz para L
+    Ac = np.zeros_like(A)  # matriz para los multiplicadores de L
     Ad = A.copy()  # matriz que se va a descomponer
+    P = np.eye(m)  # matriz de permutación (inicialmente la identidad)
     
     if m != n:
         print('Matriz no cuadrada')
-        return None, None, 0
-    
+        return None, None, None, 0
+
     for j in range(n):  # columnas
         pivote = Ad[j, j]
 
@@ -49,15 +47,18 @@ def calcularLU(A):
             # Buscamos el primer elemento no cero en la columna j por debajo de la fila j
             for k in range(j + 1, m):
                 if Ad[k, j] != 0:
-                    # Intercambiar filas
-                    Ad[[j, k]] = Ad[[k, j]]  # Intercambiar filas en Ad
+                    # Intercambiar filas en Ad y también en P
+                    Ad[[j, k]] = Ad[[k, j]]
+                    P[[j, k]] = P[[k, j]]  # Intercambiar filas en la matriz de permutación
+                    # También permutamos los coeficientes correspondientes en L
+                    Ac[[j, k], :j] = Ac[[k, j], :j]  # Permutar los coeficientes en L
                     break  # Salir del bucle después de permutar
 
             # Recalcular el pivote después del intercambio
             pivote = Ad[j, j]
             if pivote == 0:
                 print('No se puede continuar: todos los pivotes en la columna son cero.')
-                return None, None, 0
+                return None, None, None, 0
 
         # Calcular los valores de los multiplicadores y actualizar Ad
         for i in range(j + 1, m):  # filas debajo del pivote
@@ -70,12 +71,13 @@ def calcularLU(A):
     L = np.tril(Ac, -1) + np.eye(m)  # matriz triangular inferior con 1's en la diagonal
     U = Ad  # matriz triangular superior
 
-    return L, U, cant_op  # devolver L, U y contador de operaciones
+    return L, U, P, cant_op  # devolver L, U, P y contador de operaciones
 
 def calculo_k(fila_actual, divisor, iterador):
     if divisor != 0:
         return fila_actual[iterador] / divisor
     return 0  # devolver 0 si el divisor es cero
+
 # =============================================================================
 # --
 # =============================================================================
