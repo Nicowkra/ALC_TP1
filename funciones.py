@@ -17,7 +17,8 @@ import matplotlib.pyplot as plt
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
 # =============================================================================
 
-def inversaLU(L, U):
+def inversaLU(A):
+    L, U, cant_op = calcularLU(A)
     filas, columnas = L.shape
     Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
     id = np.eye(filas)  # Crea una matriz identidad
