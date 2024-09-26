@@ -16,20 +16,6 @@ import matplotlib.pyplot as plt
 # =============================================================================
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
 # =============================================================================
-
-def inversaLU(A):
-    L, U, cant_op = calcularLU(A)
-    filas, columnas = L.shape
-    Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
-    id = np.eye(filas)  # Crea una matriz identidad
-
-    for i in range(columnas):
-        y = sc.solve_triangular(L, id[:, i], lower=True)  # Resuelve L * y = e_i
-        x = sc.solve_triangular(U, y)  # Resuelve U * x = y
-        Inv[:, i] = x  # Almacena la columna en Inv
-
-    return Inv
-
 def calcularLU(A):
     cant_op = 0
     m = A.shape[0]  # filas
@@ -78,7 +64,8 @@ def calculo_k(fila_actual, divisor, iterador):
     return 0  # devolver 0 si el divisor es cero
 
 
-def inversaLU(L, U):
+def inversaLU(A):
+    L, U, cant_op = calcularLU(A)
     filas, columnas = L.shape
     Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
     id = np.eye(filas)  # Crea una matriz identidad
@@ -89,7 +76,6 @@ def inversaLU(L, U):
         Inv[:, i] = x  # Almacena la columna en Inv
 
     return Inv
-      
 
 # =============================================================================
 # --
