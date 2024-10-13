@@ -14,8 +14,48 @@ import scipy.linalg as sc
 # =============================================================================
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
 # =============================================================================
-def inversaLU(A):
-    L, U, P, cant_op = calcularLU(A)
+def intercambiarfilas(A, fila1, fila2):
+    A[[fila1, fila2]] = A[[fila2, fila1]]
+    return A
+def calcularLU(A):
+    m, n = A.shape
+    '''Si no es matriz cuadrada, no es invertible, 
+    entonces no podemos calcular la factorización LU'''
+    if m != n:
+        print('Matriz no cuadrada')
+        return
+    '''
+    Iniciamos el vector de permutaciones
+    '''
+    P = np.arange(n) 
+    Ac = A.copy()
+    '''
+    Recorremos las filas de la matriz A y si el pivote es cero, intercambiamos
+    la fila con la siguiente
+    '''  
+    for fila in range(m):
+        if Ac[fila, fila] == 0:
+            '''
+            Nos aseguramos de no estar en la última fila
+            '''
+            if fila + 1 < m: 
+                intercambiarfilas(Ac, fila, fila + 1)
+                P[fila] = fila + 1
+                P[fila + 1] = fila 
+            else:
+                print("La matriz no tiene factorización LU.")
+        '''Recorremos la matriz Ac. En cada paso, se calcula un factor 
+        y se utiliza para restar las filas y obtener la eliminación gaussiana'''
+        for i in range(fila + 1, m):
+            factor = Ac[i, fila] / Ac[fila, fila]
+            Ac[i, fila] = factor  
+            Ac[i, fila + 1:] -= factor * Ac[fila, fila + 1:]
+        '''Calculamos las matrices L y U que componen la factorización LU de la matriz original.
+        L toma la parte triangular inferior estricta de la matriz Ac y le añadimos una matriz identidad''' 
+        L = np.tril(Ac, -1) + np.eye(m) 
+        U = np.triu(Ac) 
+    return L, U, P
+def inversaLU (L, U,  P):
     filas, columnas = L.shape
     Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
     id = np.eye(filas)  # Crea una matriz identidad
@@ -24,59 +64,8 @@ def inversaLU(A):
         y = sc.solve_triangular(L, id[:, i], lower=True)  # Resuelve L * y = e_i
         x = sc.solve_triangular(U, y)  # Resuelve U * x = y
         Inv[:, i] = x  # Almacena la columna en Inv
-
+    Inv = Inv[:, P]
     return Inv
-
-def calcularLU(A):
-    cant_op = 0
-    m = A.shape[0]  # filas
-    n = A.shape[1]  # columnas
-    Ac = np.zeros_like(A)  # matriz para los multiplicadores de L
-    Ad = A.copy()  # matriz que se va a descomponer
-    P = np.eye(m)  # matriz de permutación (inicialmente la identidad)
-    
-    if m != n:
-        print('Matriz no cuadrada')
-        return None, None, None, 0
-
-    for j in range(n):  # columnas
-        pivote = Ad[j, j]
-
-        # Caso que el pivote es cero
-        if pivote == 0:
-            # Buscamos el primer elemento no cero en la columna j por debajo de la fila j
-            for k in range(j + 1, m):
-                if Ad[k, j] != 0:
-                    # Intercambiar filas en Ad y también en P
-                    Ad[[j, k]] = Ad[[k, j]]
-                    P[[j, k]] = P[[k, j]]  # Intercambiar filas en la matriz de permutación
-                    # También permutamos los coeficientes correspondientes en L
-                    Ac[[j, k], :j] = Ac[[k, j], :j]  # Permutar los coeficientes en L
-                    break  # Salir del bucle después de permutar
-
-            # Recalcular el pivote después del intercambio
-            pivote = Ad[j, j]
-            if pivote == 0:
-                print('No se puede continuar: todos los pivotes en la columna son cero.')
-                return None, None, None, 0
-
-        # Calcular los valores de los multiplicadores y actualizar Ad
-        for i in range(j + 1, m):  # filas debajo del pivote
-            k = calculo_k(Ad[i], pivote, j)  # cálculo del multiplicador
-            Ad[i] = Ad[i] - k * Ad[j]  # restar fila multiplicada por el pivote
-            Ac[i, j] = k  # almacenar el multiplicador en la matriz L
-            cant_op += 1
-
-    # Actualizar las matrices L y U
-    L = np.tril(Ac, -1) + np.eye(m)  # matriz triangular inferior con 1's en la diagonal
-    U = Ad  # matriz triangular superior
-
-    return L, U, P, cant_op  # devolver L, U, P y contador de operaciones
-
-def calculo_k(fila_actual, divisor, iterador):
-    if divisor != 0:
-        return fila_actual[iterador] / divisor
-    return 0  # devolver 0 si el divisor es cero
 
 # =============================================================================
 # --
