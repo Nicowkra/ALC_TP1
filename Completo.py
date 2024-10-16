@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
+import scipy.linalg as sc
 import numpy as np
 import pandas as pd
-import scipy.linalg as sc
 import funciones as f
 
 matriz = pd.read_excel("matriz.xlsx", sheet_name ="LAC_IOT_2011",)
@@ -59,60 +59,62 @@ p = Pry_out_copy
 p = np.diag(p) #Diagonalizo el vector
 l,u,per = f.calcularLU(p) #Lu de p
 inv_p = f.inversaLU(l,u,per) #Inversa de p
-res = z@inv_p
+res_intra_PRY = z@inv_p
 #Coef intra-regionales NIC
 z = Nic_int
 p = Nic_out_copy
 p = np.diag(p) #Diagonalizo el vector
 l,u,per = f.calcularLU(p) #Lu de p
 inv_p = f.inversaLU(l,u,per) #Inversa de p
-res = z@inv_p
+res_intra_NIC = z@inv_p
 #Coef inter-regionales PRY
 z = Pry_int
 p = Nic_out_copy
 p = np.diag(p) #Diagonalizo el vector
 l,u,per = f.calcularLU(p) #Lu de p
 inv_p = f.inversaLU(l,u,per) #Inversa de p
-res = z@inv_p
+res_inter_PRY = z@inv_p
 #Coef inter-regionales NIC
 z = Nic_int
 p = Pry_out_copy
 p = np.diag(p) #Diagonalizo el vector
 l,u,per = f.calcularLU(p) #Lu de p
 inv_p = f.inversaLU(l,u,per) #Inversa de p
-res = z@inv_p
+res_inter_NIC = z@inv_p
 
 
 #Shock
-P1 = np.concatenate((Pry_out,Nic_out), axis=None )#Vector P    
-Id = np.identity(A.shape[0])
-res = Id - A
-D1 = res @ P1
-
+D1 = ((np.identity(Pry_int.shape[0]) - res_intra_PRY) @ Pry_out_copy)  #Calculo Demanda de Pry
 D2 = D1.copy()
 D2[4] = D2[4]*0.9
 D2[5] = D2[5]*1.033
 D2[6] = D2[6]*1.033
 D2[7] = D2[7]*1.033
-Delta_Demanda = D1 - D2 # Diferencia en la demanda
-Delta_Demanda = np.split(Delta_Demanda,2)[0]
+Delta_Demanda = D2 - D1 # Diferencia en la demanda
 
 
 #Calculo Delta_P con Delta_Demanda con la ecuacion de variacion de produccion considerando las relaciones inter-regionales
 Id = np.identity(Pry_int.shape[0])
-Id_p = Id - Pry_int
-Id_n = Id - Nic_int
-Id_n_inv = f.inversa(Id_n)
-res = Id_p - (Pry_ext @ Id_n_inv @ Nic_ext)
-res_inv = f.inversa(res)
+Id_p = Id - res_intra_PRY
+Id_n = Id - res_intra_NIC
+l,u,p = f.calcularLU(Id_n)
+Id_n_inv = f.inversaLU(l,u,p)
+multi = res_inter_NIC @ Id_n_inv @ res_inter_PRY
+res = Id_p - multi
+l,u,p = f.calcularLU(res)
+res_inv = f.inversaLU(l,u,p)
 Delta_Prod = res_inv @ Delta_Demanda
 
 #Calculo Delta_P con la ecuacion del modelo simple
 Id = np.identity(Pry_int.shape[0])
-Id_p = Id - Pry_int
-Id_p_inv = f.inversa(Id_p)
+Id_p = Id - res_intra_PRY
+l,u,p = f.calcularLU(Id_p)
+Id_p_inv = f.inversaLU(l,u,p)
 Delta_Prod_Simple = Id_p_inv @ Delta_Demanda
 
+
+
+res_Delta = Delta_Prod - Delta_Prod_Simple
 
 plt.figure(figsize=(20,5))
 
@@ -137,7 +139,7 @@ plt.show()
 
 plt.figure(figsize=(20,5))
 
-plt.bar(range(len(Delta_Prod_Simple)),Delta_Prod_Simple, 
+plt.bar(range(len(res_Delta)),res_Delta, 
 color=np.where(Delta_Prod < 0, 'crimson', 'steelblue') #Color dependiendo de si es positivo o negativo
 )
 
@@ -146,7 +148,7 @@ plt.xticks(range(len(Pry_col)),Pry_col,rotation=45)
 plt.title('Variación de producción', fontsize=20, fontweight='bold')
 
 # Agrego los valores encima de cada barra
-for idx, value in enumerate(Delta_Prod_Simple):
+for idx, value in enumerate(res_Delta):
     plt.text(idx, value + (0.01 if value >= 0 else -0.05), 
              f'{value:.2f}', ha='center', va='bottom' if value >= 0 else 'top', fontsize=9)
 

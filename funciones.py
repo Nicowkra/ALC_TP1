@@ -66,18 +66,3 @@ def inversaLU (L, U,  P):
         Inv[:, i] = x  # Almacena la columna en Inv
     Inv = Inv[:, P]
     return Inv
-
-def inversa(L):
-    n = L.shape[0]
-    L_inv = np.zeros_like(L, dtype=float)
-    for i in range(n):
-        L_inv[i, i] = 1.0 / L[i, i]
-        for j in range(i):
-            suma = 0
-            for k in range(j, i):
-                suma += L[i, k] * L_inv[k, j]
-            L_inv[i, j] = -suma / L[i, i]
-    
-    return L_inv
-
-
