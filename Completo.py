@@ -84,16 +84,16 @@ res_inter_NIC = z@inv_p
 
 
 #Shock
-D1 = ((np.identity(Pry_int.shape[0]) - res_intra_PRY) @ Pry_out_copy)  #Calculo Demanda de Pry
-D2 = D1.copy()
-D2[4] = D2[4]*0.9
-D2[5] = D2[5]*1.033
-D2[6] = D2[6]*1.033
-D2[7] = D2[7]*1.033
-Delta_Demanda = D2 - D1 # Diferencia en la demanda
+D_completa = ((np.identity(Pry_int.shape[0]) - res_intra_PRY) @ Pry_out_copy) - res_inter_PRY @Nic_out_copy #Calculo Demanda de Pry
+D2_completa = D_completa.copy()
+D2_completa[4] = D2_completa[4]*0.9
+D2_completa[5] = D2_completa[5]*1.033
+D2_completa[6] = D2_completa[6]*1.033
+D2_completa[7] = D2_completa[7]*1.033
+Delta_Demanda_Completa = D2_completa - D_completa # Diferencia en la demanda
 
 
-#Calculo Delta_P con Delta_Demanda con la ecuacion de variacion de produccion considerando las relaciones inter-regionales
+#Calculo Delta_P con Delta_Demanda_Completa con la ecuacion de variacion de produccion considerando las relaciones inter-regionales
 Id = np.identity(Pry_int.shape[0])
 Id_p = Id - res_intra_PRY
 Id_n = Id - res_intra_NIC
@@ -103,14 +103,23 @@ multi = res_inter_NIC @ Id_n_inv @ res_inter_PRY
 res = Id_p - multi
 l,u,p = f.calcularLU(res)
 res_inv = f.inversaLU(l,u,p)
-Delta_Prod = res_inv @ Delta_Demanda
+Delta_Prod = res_inv @ Delta_Demanda_Completa
+
+#Calculo Demanda simple
+D_simple = ((np.identity(Pry_int.shape[0]) - res_intra_PRY) @ Pry_out_copy)
+D2_simple = D_simple.copy()
+D2_simple[4] = D2_simple[4]*0.9
+D2_simple[5] = D2_simple[5]*1.033
+D2_simple[6] = D2_simple[6]*1.033
+D2_simple[7] = D2_simple[7]*1.033
+Delta_Demanda_Simple = D2_simple - D_simple # Diferencia en la demanda
 
 #Calculo Delta_P con la ecuacion del modelo simple
 Id = np.identity(Pry_int.shape[0])
 Id_p = Id - res_intra_PRY
 l,u,p = f.calcularLU(Id_p)
 Id_p_inv = f.inversaLU(l,u,p)
-Delta_Prod_Simple = Id_p_inv @ Delta_Demanda
+Delta_Prod_Simple = Id_p_inv @ Delta_Demanda_Simple
 
 
 
