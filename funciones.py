@@ -14,9 +14,11 @@ import scipy.linalg as sc
 # =============================================================================
 # FUNCIONES PARA CALCULAR LU E INVERSA DE UNA MATRIZ
 # =============================================================================
+#Aca intercambio las filas, entra una matriz y las dos filas a intercambiar
 def intercambiarfilas(A, fila1, fila2):
     A[[fila1, fila2]] = A[[fila2, fila1]]
     return A
+#En calcularLU entra una matriz A y devuelve su factorizacion LU y un verctor de permutacion
 def calcularLU(A):
     m, n = A.shape
     '''Si no es matriz cuadrada, no es invertible, 
@@ -55,6 +57,8 @@ def calcularLU(A):
         L = np.tril(Ac, -1) + np.eye(m) 
         U = np.triu(Ac) 
     return L, U, P
+
+#inversaLU recibe la factorizacion LU y vector de permutacion y devuelve la inversa de A
 def inversaLU (L, U,  P):
     filas, columnas = L.shape
     Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
